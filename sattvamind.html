@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SattvaMind</title>
+</head>
+<body>
+<div id="app">
+  <div id="login-form" style="display: none;">
+    <h2>Accedi con email</h2>
+    <input type="email" id="email-input" placeholder="Inserisci la tua email">
+    <button onclick="sendMagicLink()">Invia link di accesso</button>
+    <p id="message"></p>
+  </div>
+
+  <div id="private-area" style="display: none;">
+    <h2>🌿 Benvenuto in SattvaMind</h2>
+    <p>Ti ascolto. Scrivimi qui il tuo pensiero.</p>
+    <iframe src="https://sattvamind-backend.vercel.app" width="100%" height="400" style="border: none;"></iframe>
+    <button onclick="logout()">Esci</button>
+  </div>
+
+  <div id="session-expired" style="display: none;">
+    <h3>⚠️ Sessione non valida</h3>
+    <p>Per motivi di sicurezza, devi inserire di nuovo la tua email per accedere a SattvaMind.</p>
+    <button onclick="resetToLogin()">Torna al login</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const { createClient } = supabase;
+  const supabaseClient = createClient(
+    'https://dphfecuvghozoiynsegd.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwaGZlY3V2Z2hvem9peW5zZWdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NDg3MDQsImV4cCI6MjA2MDMyNDcwNH0.u3yG-nltQlnKnH_nbR9-Ouc_2ot9UbsN-9J-aQp5mZA'
+  );
+
+  async function checkSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (session) {
+      document.getElementById('private-area').style.display = 'block';
+    } else {
+      const url = new URL(window.location.href);
+      const hasAccessToken = url.searchParams.get("access_token");
+      if (hasAccessToken) {
+        document.getElementById('session-expired').style.display = 'block';
+      } else {
+        document.getElementById('login-form').style.display = 'block';
+      }
+    }
+  }
+
+  checkSession();
+
+  async function sendMagicLink() {
+    const email = document.getElementById('email-input').value;
+    const message = document.getElementById('message');
+
+    const { error } = await supabaseClient.auth.signInWithOtp({
+      email: email,
+      options: {
+        emailRedirectTo: 'https://www.behrangyoga.com/sattvamind'
+      }
+    });
+
+    if (error) {
+      message.textContent = 'Errore: ' + error.message;
+      message.style.color = 'red';
+    } else {
+      message.textContent = 'Controlla la tua email per accedere ✉️';
+      message.style.color = 'green';
+    }
+  }
+
+  async function logout() {
+    await supabaseClient.auth.signOut();
+    location.reload();
+  }
+
+  function resetToLogin() {
+    document.getElementById('session-expired').style.display = 'none';
+    document.getElementById('login-form').style.display = 'block';
+  }
+</script>
+</body>
+</html>

@@ -34,69 +34,43 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
     const supabase = createClient(
-      'https://dphfecuvghozoiynsegd.supabase.co', // <-- sostituisci con il tuo URL
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwaGZlY3V2Z2hvem9peW5zZWdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NDg3MDQsImV4cCI6MjA2MDMyNDcwNH0.u3yG-nltQlnKnH_nbR9-Ouc_2ot9UbsN-9J-aQp5mZA' // <-- sostituisci con la tua chiave anon
+      'https://dphfecuvghozoiynsegd.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhc2Ui...'
     )
 
-    const emailRedirectTo = 'https://sattvamind-frontend.vercel.app/callback.html'
+    window.login = async function () {
+      const email = document.getElementById('email').value
 
-    const url = new URL(window.location.href)
-    const hash = url.hash
-    const accessToken = hash.includes('access_token') ? hash.split('access_token=')[1].split('&')[0] : null
-
-    if (accessToken) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!session) {
-          supabase.auth.exchangeCodeForSession(hash).then(() => {
-            showChat()
-          }).catch(() => {
-            document.getElementById('session-expired').style.display = 'block'
-            document.getElementById('login-form').style.display = 'none'
-          })
-        } else {
-          showChat()
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          redirectTo: 'https://sattvamind-frontend.vercel.app/callback.html'
         }
       })
+
+      if (error) {
+        showMessage('❌ Errore: ' + error.message, 'error')
+      } else {
+        showMessage('✅ Link inviato! Controlla la tua casella email.', 'success')
+      }
     }
 
-    async function login() {
-  const email = document.getElementById('email').value
-
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      redirectTo: 'https://sattvamind-frontend.vercel.app/callback.html'
-    }
-  })
-
-  if (error) {
-    showMessage('❌ Errore: ' + error.message, 'error')
-  } else {
-    showMessage('✅ Link inviato! Controlla la tua casella email.', 'success')
-  }
-}
-
-function showMessage(text, type) {
-  const messageDiv = document.getElementById('message')
-  messageDiv.innerText = text
-  messageDiv.style.color = type === 'error' ? 'red' : 'green'
-}
-
-
-    async function logout() {
-      await supabase.auth.signOut()
-      location.reload()
+    window.showMessage = function (text, type) {
+      const messageDiv = document.getElementById('message')
+      messageDiv.innerText = text
+      messageDiv.style.color = type === 'error' ? 'red' : 'green'
     }
 
-    function resetToLogin() {
+    // ✅ Aggiungo anche reset e logout per sicurezza
+    window.resetToLogin = function () {
       document.getElementById('session-expired').style.display = 'none'
       document.getElementById('login-form').style.display = 'block'
+      document.getElementById('chat').style.display = 'none'
     }
 
-    function showChat() {
-      document.getElementById('login-form').style.display = 'none'
-      document.getElementById('session-expired').style.display = 'none'
-      document.getElementById('chat').style.display = 'block'
+    window.logout = async function () {
+      await supabase.auth.signOut()
+      resetToLogin()
     }
   </script>
 </body>

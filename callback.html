@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login in corso...</title>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+    const supabase = createClient(
+      'https://dphfecuvghozoiynsegd.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhc2Ui...'
+    )
+
+    async function handleLogin() {
+      const { error } = await supabase.auth.getSessionFromUrl()
+      if (error) {
+        console.error('Errore login:', error.message)
+      } else {
+        // ✅ Reindirizza dopo login riuscito
+        window.location.href = 'https://www.behrangyoga.com/sattvamind-chat'
+      }
+    }
+
+    handleLogin()
+  </script>
+</head>
+<body>
+  <p>Accesso in corso, attendi qualche secondo...</p>
+</body>
+</html>

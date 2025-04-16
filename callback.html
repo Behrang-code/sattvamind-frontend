@@ -1,27 +1,41 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>Login in corso...</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accesso in corso...</title>
 </head>
 <body>
-  <p>Accesso in corso... Attendi un momento.</p>
+  <h2 id="loading-message">Accesso in corso... Attendi un momento.</h2>
+
+  <div id="chat" style="display:none; width: 100%; height: 90vh;">
+    <iframe
+      src="https://sattvamind-chat.vercel.app"
+      width="100%"
+      height="100%"
+      frameborder="0"
+      style="border: none;"></iframe>
+  </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
     const supabase = createClient(
       'https://dphfecuvghozoiynsegd.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' // la tua chiave pubblica completa
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwaGZlY3V2Z2hvem9peW5zZWdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NDg3MDQsImV4cCI6MjA2MDMyNDcwNH0.u3yG-nltQlnKnH_nbR9-Ouc_2ot9UbsN-9J-aQp5mZA'
     )
 
-    const { error } = await supabase.auth.getSessionFromUrl()
+    const hash = window.location.hash.substring(1)
+    const params = new URLSearchParams(hash)
+    const access_token = params.get('access_token')
 
-    if (error) {
-      console.error('Errore login:', error.message)
+    if (access_token) {
+      supabase.auth.setSession({ access_token, refresh_token: '' }).then(() => {
+        document.getElementById('loading-message').style.display = 'none'
+        document.getElementById('chat').style.display = 'block'
+      })
     } else {
-      // ✅ Sessione ricevuta, ora reindirizza al sito principale
-      window.location.href = 'https://www.behrangyoga.com/sattvamind-chat'
+      document.getElementById('loading-message').innerText = 'Errore: accesso non riuscito.'
     }
   </script>
 </body>

@@ -1,77 +1,102 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SattvaMind – Accedi</title>
-</head>
-<body>
-  <div id="session-expired" style="display:none;">
-    <h2>Sessione scaduta</h2>
-    <p>Ricarica la pagina per accedere di nuovo.</p>
-    <button onclick="resetToLogin()">Riprova</button>
-  </div>
-
-  <div id="login-form">
-    <h2>Accedi con email</h2>
-    <input type="email" id="email" placeholder="Inserisci la tua email" />
-    <button onclick="login()">Invia link di accesso</button>
-    <p id="message"></p>
-  </div>
-
-  <div id="chat" style="display:none; width: 100%; height: 80vh;">
-    <iframe
-      id="chat-iframe"
-      src="https://sattvamind-chat.vercel.app"
-      width="100%"
-      height="100%"
-      frameborder="0"
-      style="border: none;"></iframe>
-    <button onclick="logout()">Esci</button>
-  </div>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-    const supabase = createClient(
-      'https://dphfecuvghozoiynsegd.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwaGZlY3V2Z2hvem9peW5zZWdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NDg3MDQsImV4cCI6MjA2MDMyNDcwNH0.u3yG-nltQlnKnH_nbR9-Ouc_2ot9UbsN-9J-aQp5mZA'
-    )
-
-    window.login = async function () {
-      const email = document.getElementById('email').value
-
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          redirectTo: 'https://sattvamind-frontend.vercel.app/callback.html'
-        }
-      })
-
-      if (error) {
-        showMessage('❌ Errore: ' + error.message, 'error')
-      } else {
-        showMessage('✅ Link inviato! Controlla la tua casella email.', 'success')
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SattvaMind Chat</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f8f8f8;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
       }
-    }
+      .chat-container {
+        max-width: 600px;
+        margin: auto;
+        padding: 1rem;
+        background: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .messages {
+        flex: 1;
+        overflow-y: auto;
+        margin-bottom: 1rem;
+      }
+      .message {
+        padding: 0.5rem;
+        margin: 0.5rem 0;
+        border-radius: 5px;
+      }
+      .user {
+        background: #e1f5fe;
+        align-self: flex-end;
+      }
+      .bot {
+        background: #ede7f6;
+        align-self: flex-start;
+      }
+      form {
+        display: flex;
+        gap: 0.5rem;
+      }
+      input[type="text"] {
+        flex: 1;
+        padding: 0.5rem;
+      }
+      button {
+        padding: 0.5rem 1rem;
+        background: #673ab7;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="messages" id="chat"></div>
+      <form id="chat-form">
+        <input type="text" id="name" placeholder="Il tuo nome" required />
+        <input type="text" id="message" placeholder="Scrivi un messaggio..." required />
+        <button type="submit">Invia</button>
+      </form>
+    </div>
 
-    window.showMessage = function (text, type) {
-      const messageDiv = document.getElementById('message')
-      messageDiv.innerText = text
-      messageDiv.style.color = type === 'error' ? 'red' : 'green'
-    }
+    <script>
+      const form = document.getElementById('chat-form');
+      const chat = document.getElementById('chat');
 
-    // ✅ Aggiungo anche reset e logout per sicurezza
-    window.resetToLogin = function () {
-      document.getElementById('session-expired').style.display = 'none'
-      document.getElementById('login-form').style.display = 'block'
-      document.getElementById('chat').style.display = 'none'
-    }
+      function addMessage(content, sender) {
+        const div = document.createElement('div');
+        div.className = `message ${sender}`;
+        div.textContent = content;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+      }
 
-    window.logout = async function () {
-      await supabase.auth.signOut()
-      resetToLogin()
-    }
-  </script>
-</body>
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('name').value;
+        const message = document.getElementById('message').value;
+        addMessage(`${name}: ${message}`, 'user');
+        document.getElementById('message').value = '';
+
+        const response = await fetch('https://sattvamind-backend.vercel.app/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, message })
+        });
+
+        const data = await response.json();
+        addMessage(`SattvaMind: ${data.reply}`, 'bot');
+      });
+    </script>
+  </body>
 </html>

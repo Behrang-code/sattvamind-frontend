@@ -16,7 +16,7 @@
         justify-content: center;
         min-height: 100vh;
       }
-      .login, .user-info {
+      .login, .signup, .user-info {
         max-width: 400px;
         width: 100%;
         padding: 2rem;
@@ -24,6 +24,7 @@
         border-radius: 10px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         text-align: center;
+        margin-bottom: 1rem;
       }
       input {
         padding: 0.5rem;
@@ -50,6 +51,13 @@
       <button onclick="login()">Accedi</button>
     </div>
 
+    <div class="signup" id="signup-box">
+      <h2>Registrati</h2>
+      <input type="email" id="signup-email" placeholder="Email" />
+      <input type="password" id="signup-password" placeholder="Password" />
+      <button onclick="signup()">Crea account</button>
+    </div>
+
     <div class="user-info" id="user-box" style="display:none">
       <h2>Benvenuto!</h2>
       <p id="user-email"></p>
@@ -70,8 +78,20 @@
           alert('Errore: ' + error.message);
         } else {
           document.getElementById('login-box').style.display = 'none';
+          document.getElementById('signup-box').style.display = 'none';
           document.getElementById('user-box').style.display = 'block';
           document.getElementById('user-email').innerText = data.user.email;
+        }
+      }
+
+      async function signup() {
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+          alert('Errore nella registrazione: ' + error.message);
+        } else {
+          alert('Registrazione riuscita. Controlla la tua email per confermare.');
         }
       }
 
@@ -79,12 +99,14 @@
         await supabase.auth.signOut();
         document.getElementById('user-box').style.display = 'none';
         document.getElementById('login-box').style.display = 'block';
+        document.getElementById('signup-box').style.display = 'block';
       }
 
       // check session
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) {
           document.getElementById('login-box').style.display = 'none';
+          document.getElementById('signup-box').style.display = 'none';
           document.getElementById('user-box').style.display = 'block';
           document.getElementById('user-email').innerText = session.user.email;
         }

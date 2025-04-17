@@ -66,15 +66,15 @@
 
     <script>
       const { createClient } = supabase;
-const supabaseClient = createClient(
-  "https://dphfecuvghozoiynsegd.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwaGZlY3V2Z2hvem9peW5zZWdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NDg3MDQsImV4cCI6MjA2MDMyNDcwNH0.u3yG-nltQlnKnH_nbR9-Ouc_2ot9UbsN-9J-aQp5mZA"
-);
+      const supabaseClient = createClient(
+        "https://dphfecuvghozoiynsegd.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwaGZlY3V2Z2hvem9peW5zZWdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NDg3MDQsImV4cCI6MjA2MDMyNDcwNH0.u3yG-nltQlnKnH_nbR9-Ouc_2ot9UbsN-9J-aQp5mZA"
+      );
 
       async function login() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) {
           alert('Errore: ' + error.message);
         } else {
@@ -88,7 +88,7 @@ const supabaseClient = createClient(
       async function signup() {
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
         if (error) {
           alert('Errore nella registrazione: ' + error.message);
         } else {
@@ -97,14 +97,14 @@ const supabaseClient = createClient(
       }
 
       async function logout() {
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
         document.getElementById('user-box').style.display = 'none';
         document.getElementById('login-box').style.display = 'block';
         document.getElementById('signup-box').style.display = 'block';
       }
 
       // check session
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      supabaseClient.auth.getSession().then(({ data: { session } }) => {
         if (session) {
           document.getElementById('login-box').style.display = 'none';
           document.getElementById('signup-box').style.display = 'none';
